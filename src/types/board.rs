@@ -8,6 +8,8 @@ use crate::types::{
 };
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+// Empty square = 0000
+// unused square patterns: 1000, 0111, 1111
 pub struct Board {
     white: u64,   // White pieces
     sliders: u64, // queens, rooks
@@ -19,18 +21,18 @@ impl Board {
     fn uncolored_at(&self, sq: u8) -> Option<Piece> {
         assert!(sq < 64);
         match (
-            self.royal.bit_set(sq),
-            self.minor.bit_set(sq),
             self.sliders.bit_set(sq),
+            self.minor.bit_set(sq),
+            self.royal.bit_set(sq),
         ) {
             // There is room for a special square marking with (true, true, true)
             (true, true, true) => panic!("invalid board state: {:?} at square {}", self, sq),
-            (true, true, false) => Some(Pawn),
+            (false, true, true) => Some(Pawn),
             (true, false, true) => Some(Queen),
-            (true, false, false) => Some(King),
-            (false, true, true) => Some(Bishop),
+            (false, false, true) => Some(King),
+            (true, true, false) => Some(Bishop),
             (false, true, false) => Some(Knight),
-            (false, false, true) => Some(Rook),
+            (true, false, false) => Some(Rook),
             (false, false, false) => None,
         }
     }
@@ -38,6 +40,7 @@ impl Board {
     pub fn at(&self, sq: u8) -> Option<ColoredPiece> {
         assert!(sq < 64);
 
+        // There is room to treat None differently whether self.white.bit_set(sq)
         self.uncolored_at(sq).map(|pt| {
             if self.white.bit_set(sq) {
                 ColoredPiece::White(pt)
