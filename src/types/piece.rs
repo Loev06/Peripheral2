@@ -1,4 +1,5 @@
 use anyhow::{anyhow, Result};
+use std::fmt::Display;
 
 pub enum Piece {
     King,
@@ -37,6 +38,28 @@ impl ColoredPiece {
             Ok(ColoredPiece::Black(pt))
         } else {
             Ok(ColoredPiece::White(pt))
+        }
+    }
+}
+
+impl Display for Piece {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Piece::King   => 'K',
+            Piece::Queen  => 'Q',
+            Piece::Rook   => 'R',
+            Piece::Bishop => 'B',
+            Piece::Knight => 'N',
+            Piece::Pawn   => 'P'
+        }.fmt(f)
+    }
+}
+
+impl Display for ColoredPiece {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            ColoredPiece::White(pt) => pt.to_string().to_uppercase().fmt(f),
+            ColoredPiece::Black(pt) => pt.to_string().to_lowercase().fmt(f)
         }
     }
 }

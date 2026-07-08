@@ -5,6 +5,7 @@ pub trait SquareIndexExt {
 }
 
 pub trait BitboardExt {
+    fn bit_set(&self, sq: u8) -> bool;
     fn display(self) -> String;
 }
 
@@ -16,6 +17,11 @@ impl SquareIndexExt for u8 {
 }
 
 impl BitboardExt for u64 {
+    fn bit_set(&self, sq: u8) -> bool {
+        assert!(sq < 64);
+        (self & (1 << sq)) != 0
+    }
+
     fn display(self) -> String {
         let mut s = String::new();
         for rank in (0..8).rev() {
