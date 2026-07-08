@@ -1,4 +1,4 @@
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 use std::fmt::Display;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -8,13 +8,13 @@ pub enum Piece {
     Rook,
     Bishop,
     Knight,
-    Pawn
+    Pawn,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ColoredPiece {
     White(Piece),
-    Black(Piece)
+    Black(Piece),
 }
 
 impl Piece {
@@ -26,15 +26,14 @@ impl Piece {
             'b' => Ok(Piece::Bishop),
             'n' => Ok(Piece::Knight),
             'p' => Ok(Piece::Pawn),
-            _   => Err(anyhow!("Invalid piece character: {}", c))
+            _ => Err(anyhow!("Invalid piece character: {}", c)),
         }
     }
 }
 
 impl ColoredPiece {
     pub fn from_char(c: char) -> Result<Self> {
-        let pt = Piece::from_char(c)
-            .map_err(|_| anyhow!("Invalid piece character: {}", c))?;
+        let pt = Piece::from_char(c).map_err(|_| anyhow!("Invalid piece character: {}", c))?;
 
         if c.is_lowercase() {
             Ok(ColoredPiece::Black(pt))
@@ -47,13 +46,14 @@ impl ColoredPiece {
 impl Display for Piece {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Piece::King   => 'K',
-            Piece::Queen  => 'Q',
-            Piece::Rook   => 'R',
+            Piece::King => 'K',
+            Piece::Queen => 'Q',
+            Piece::Rook => 'R',
             Piece::Bishop => 'B',
             Piece::Knight => 'N',
-            Piece::Pawn   => 'P'
-        }.fmt(f)
+            Piece::Pawn => 'P',
+        }
+        .fmt(f)
     }
 }
 
@@ -61,7 +61,7 @@ impl Display for ColoredPiece {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             ColoredPiece::White(pt) => pt.to_string().to_uppercase().fmt(f),
-            ColoredPiece::Black(pt) => pt.to_string().to_lowercase().fmt(f)
+            ColoredPiece::Black(pt) => pt.to_string().to_lowercase().fmt(f),
         }
     }
 }
@@ -80,9 +80,18 @@ mod tests {
 
     #[test]
     fn test_colored_piece_from_char() {
-        assert_eq!(ColoredPiece::from_char('Q').unwrap(), ColoredPiece::White(Piece::Queen));
-        assert_eq!(ColoredPiece::from_char('q').unwrap(), ColoredPiece::Black(Piece::Queen));
-        assert_eq!(ColoredPiece::from_char('k').unwrap(), ColoredPiece::Black(Piece::King));
+        assert_eq!(
+            ColoredPiece::from_char('Q').unwrap(),
+            ColoredPiece::White(Piece::Queen)
+        );
+        assert_eq!(
+            ColoredPiece::from_char('q').unwrap(),
+            ColoredPiece::Black(Piece::Queen)
+        );
+        assert_eq!(
+            ColoredPiece::from_char('k').unwrap(),
+            ColoredPiece::Black(Piece::King)
+        );
         assert!(ColoredPiece::from_char('x').is_err());
     }
 

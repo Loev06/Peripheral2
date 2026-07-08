@@ -1,16 +1,19 @@
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 use std::fmt::Display;
 
 use crate::types::{
     extensions::{BitboardExt, SquareIndexExt},
-    piece::{ColoredPiece, Piece::{self, *}}
+    piece::{
+        ColoredPiece,
+        Piece::{self, *},
+    },
 };
 
 pub struct Board {
     white: u64,   // White pieces
     sliders: u64, // queens, rooks
     minor: u64,   // bishops, knights, pawns
-    royal: u64    // kings, queens, pawns
+    royal: u64,   // kings, queens, pawns
 }
 
 impl Board {
@@ -40,7 +43,7 @@ impl Board {
 
     pub fn at(&self, sq: u8) -> Option<ColoredPiece> {
         assert!(sq < 64);
-        
+
         self.uncolored_at(sq).map(|pt| {
             if self.white.bit_set(sq) {
                 ColoredPiece::White(pt)
@@ -52,19 +55,19 @@ impl Board {
 
     pub fn pieces(&self, pt: Piece) -> u64 {
         match pt {
-            King   => self.royal,
-            Queen  => self.sliders & self.royal,
-            Rook   => self.sliders,
+            King => self.royal,
+            Queen => self.sliders & self.royal,
+            Rook => self.sliders,
             Bishop => self.sliders & self.minor,
             Knight => self.minor,
-            Pawn   => self.minor & self.royal
+            Pawn => self.minor & self.royal,
         }
     }
 
     pub fn colored_pieces(&self, pt: ColoredPiece) -> u64 {
         match pt {
             ColoredPiece::White(p) => self.pieces(p) & self.white,
-            ColoredPiece::Black(p) => self.pieces(p) & !self.white
+            ColoredPiece::Black(p) => self.pieces(p) & !self.white,
         }
     }
 
@@ -74,12 +77,21 @@ impl Board {
 
     pub fn put_pieces(&mut self, pt: Piece, mask: u64) {
         match pt {
-            King   => self.royal |= mask,
-            Queen  => { self.sliders |= mask; self.royal |= mask; },
-            Rook   => self.sliders |= mask,
-            Bishop => { self.sliders |= mask; self.minor |= mask; },
+            King => self.royal |= mask,
+            Queen => {
+                self.sliders |= mask;
+                self.royal |= mask;
+            }
+            Rook => self.sliders |= mask,
+            Bishop => {
+                self.sliders |= mask;
+                self.minor |= mask;
+            }
             Knight => self.minor |= mask,
-            Pawn   => { self.minor |= mask; self.royal |= mask; }
+            Pawn => {
+                self.minor |= mask;
+                self.royal |= mask;
+            }
         }
     }
 
@@ -88,7 +100,7 @@ impl Board {
             ColoredPiece::White(p) => {
                 self.white |= mask;
                 self.put_pieces(p, mask);
-            },
+            }
             ColoredPiece::Black(p) => {
                 self.white &= !mask;
                 self.put_pieces(p, mask);
@@ -109,7 +121,12 @@ impl Board {
 
 impl TryFrom<&str> for Board {
     fn try_from(s: &str) -> Result<Self> {
-        let mut b = Board { white: 0, sliders: 0, minor: 0, royal: 0 };
+        let mut b = Board {
+            white: 0,
+            sliders: 0,
+            minor: 0,
+            royal: 0,
+        };
         let mut sq = 0;
         for c in s.chars() {
             if sq >= 64 {
@@ -139,6 +156,6 @@ impl TryFrom<&str> for Board {
         }
         Ok(b)
     }
-    
+
     type Error = anyhow::Error;
 }

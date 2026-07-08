@@ -1,4 +1,4 @@
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 
 // Extension traits for external types
 pub trait SquareIndexExt: Sized {
@@ -19,8 +19,16 @@ impl SquareIndexExt for u8 {
             return Err(anyhow!("Invalid square name: {}", name));
         }
 
-        let file = name.chars().nth(0).expect("character at index 0").to_ascii_lowercase();
-        let rank = name.chars().nth(1).expect("character at index 1").to_ascii_lowercase();
+        let file = name
+            .chars()
+            .nth(0)
+            .expect("character at index 0")
+            .to_ascii_lowercase();
+        let rank = name
+            .chars()
+            .nth(1)
+            .expect("character at index 1")
+            .to_ascii_lowercase();
 
         if !('a'..='h').contains(&file) || !('1'..='8').contains(&rank) {
             return Err(anyhow!("Invalid square name: {}", name));
@@ -43,7 +51,7 @@ impl SquareIndexExt for u8 {
         let file = (b'a' + file_index) as char;
         let rank = (b'1' + rank_index) as char;
 
-        Ok(format!("{}{}", file, rank)) 
+        Ok(format!("{}{}", file, rank))
     }
 
     fn flip_vertical(self) -> Self {
@@ -134,7 +142,9 @@ mod bitboard_tests {
     fn test_display() {
         // bb value generated using https://tearth.dev/bitboard-viewer/ (Layout 1)
         let bb = 0b0000000100000001000000000000000000000000000000000000000000000011;
-        assert_eq!(bb.display(), "\
+        assert_eq!(
+            bb.display(),
+            "\
 1 . . . . . . .
 1 . . . . . . .
 . . . . . . . .
@@ -142,6 +152,7 @@ mod bitboard_tests {
 . . . . . . . .
 . . . . . . . .
 . . . . . . . .
-1 1 . . . . . .");
+1 1 . . . . . ."
+        );
     }
 }

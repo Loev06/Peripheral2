@@ -4,9 +4,8 @@ mod types;
 use types::{
     board::Board,
     extensions::{BitboardExt, SquareIndexExt},
-    piece::{ColoredPiece::*, Piece::*}
+    piece::{ColoredPiece::*, Piece::*},
 };
-
 
 fn main() -> Result<()> {
     let b = Board::try_from("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR")?;
