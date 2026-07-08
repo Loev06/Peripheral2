@@ -72,7 +72,7 @@ impl Board {
         self.sliders | self.minor | self.royal
     }
 
-    pub fn put_piece(&mut self, pt: Piece, mask: u64) {
+    pub fn put_pieces(&mut self, pt: Piece, mask: u64) {
         match pt {
             King   => self.royal |= mask,
             Queen  => { self.sliders |= mask; self.royal |= mask; },
@@ -83,20 +83,27 @@ impl Board {
         }
     }
 
-    pub fn put_colored_piece(&mut self, pt: ColoredPiece, sq: u8) {
-        assert !(sq < 64);
-
-        let mask = 1 << sq;
+    pub fn put_colored_pieces(&mut self, pt: ColoredPiece, mask: u64) {
         match pt {
             ColoredPiece::White(p) => {
                 self.white |= mask;
-                self.put_piece(p, mask);
+                self.put_pieces(p, mask);
             },
             ColoredPiece::Black(p) => {
                 self.white &= !mask;
-                self.put_piece(p, mask);
+                self.put_pieces(p, mask);
             }
         }
+    }
+
+    pub fn put_piece(&mut self, pt: Piece, sq: u8) {
+        assert!(sq < 64);
+        self.put_pieces(pt, 1 << sq);
+    }
+
+    pub fn put_colored_piece(&mut self, pt: ColoredPiece, sq: u8) {
+        assert!(sq < 64);
+        self.put_colored_pieces(pt, 1 << sq);
     }
 }
 
