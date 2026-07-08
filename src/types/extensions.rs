@@ -1,7 +1,12 @@
+use anyhow::{anyhow, Result};
+
 // Extension traits for external types
-pub trait SquareIndexExt {
+pub trait SquareIndexExt where Self: Sized {
     /// Flips the square index vertically
     fn flip_vertical(self) -> Self;
+
+    /// Converts a square name to a square index
+    fn from_square_name(name: &str) -> Result<Self>;
 }
 
 pub trait BitboardExt {
@@ -13,6 +18,24 @@ impl SquareIndexExt for u8 {
     fn flip_vertical(self) -> Self {
         assert!(self < 64);
         self ^ 56
+    }
+
+    fn from_square_name(name: &str) -> Result<Self> {
+        if name.len() != 2 {
+            return Err(anyhow!("Invalid square name: {}", name));
+        }
+
+        let file = name.chars().nth(0).expect("character at index 0").to_ascii_lowercase();
+        let rank = name.chars().nth(1).expect("character at index 1").to_ascii_lowercase();
+
+        if !('a'..='h').contains(&file) || !('1'..='8').contains(&rank) {
+            return Err(anyhow!("Invalid square name: {}", name));
+        }
+
+        let file_index = (file as u8) - b'a';
+        let rank_index = (rank as u8) - b'1';
+
+        Ok(rank_index * 8 + file_index)
     }
 }
 
