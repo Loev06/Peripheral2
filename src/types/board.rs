@@ -2,13 +2,12 @@ use anyhow::{Result, anyhow};
 use std::fmt::Display;
 
 use crate::types::{
-    extensions::{BitboardExt, SquareIndexExt},
-    piece::{
-        ColoredPiece,
-        Piece::{self, *},
-    },
+    BitboardExt, ColoredPiece,
+    Piece::{self, *},
+    SquareIndexExt,
 };
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Board {
     white: u64,   // White pieces
     sliders: u64, // queens, rooks
@@ -19,25 +18,20 @@ pub struct Board {
 impl Board {
     fn uncolored_at(&self, sq: u8) -> Option<Piece> {
         assert!(sq < 64);
-
-        if self.royal.bit_set(sq) {
-            if self.sliders.bit_set(sq) {
-                Some(Queen)
-            } else if self.minor.bit_set(sq) {
-                Some(Pawn)
-            } else {
-                Some(King)
-            }
-        } else if self.minor.bit_set(sq) {
-            if self.sliders.bit_set(sq) {
-                Some(Bishop)
-            } else {
-                Some(Knight)
-            }
-        } else if self.sliders.bit_set(sq) {
-            Some(Rook)
-        } else {
-            None
+        match (
+            self.royal.bit_set(sq),
+            self.minor.bit_set(sq),
+            self.sliders.bit_set(sq),
+        ) {
+            // There is room for a special square marking with (true, true, true)
+            (true, true, true) => panic!("invalid board state: {:?} at square {}", self, sq),
+            (true, true, false) => Some(Pawn),
+            (true, false, true) => Some(Queen),
+            (true, false, false) => Some(King),
+            (false, true, true) => Some(Bishop),
+            (false, true, false) => Some(Knight),
+            (false, false, true) => Some(Rook),
+            (false, false, false) => None,
         }
     }
 
