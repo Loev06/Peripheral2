@@ -1,6 +1,10 @@
 use anyhow::{anyhow, Result};
+use std::fmt::Display;
 
-use super::piece::{ColoredPiece, Piece::{self, *}};
+use crate::types::{
+    extensions::SquareIndexExt,
+    piece::{ColoredPiece, Piece::{self, *}}
+};
 
 pub struct Board {
     white: u64,   // White pieces
@@ -10,13 +14,6 @@ pub struct Board {
 }
 
 impl Board {
-    /// Flips the square index vertically (0-63)
-    pub fn flip_square_index(square: u8) -> u8 {
-        assert!(square < 64); 
-
-        square ^ 56
-    }
-
     pub fn pieces(&self, pt: Piece) -> u64 {
         match pt {
             King   => self.royal,
@@ -94,7 +91,7 @@ impl TryFrom<&str> for Board {
             }
 
             let pt = ColoredPiece::from_char(c)?;
-            b.put_colored_piece(pt, Board::flip_square_index(sq));
+            b.put_colored_piece(pt, sq.flip_vertical());
             sq += 1;
         }
         Ok(b)
