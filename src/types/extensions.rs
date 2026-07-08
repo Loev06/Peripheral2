@@ -66,26 +66,17 @@ impl BitboardExt for u64 {
         (self & (1 << sq)) != 0
     }
 
+    #[rustfmt::skip]
     fn display(self) -> String {
-        let mut s = String::new();
-        for rank in (0..8).rev() {
-            for file in 0..8 {
-                let sq = rank * 8 + file;
-                let mask = 1 << sq;
-                if self & mask != 0 {
-                    s.push('1');
+        (0..8).rev().fold(String::new(), |acc, rank| {
+            acc + (0..8).fold(String::new(), |acc, file| {
+                acc + if self.bit_set(rank * 8 + file) {
+                    "1 "
                 } else {
-                    s.push('.');
+                    ". "
                 }
-                if file < 7 {
-                    s.push(' ');
-                }
-            }
-            if rank > 0 {
-                s.push('\n');
-            }
-        }
-        s
+            }).trim_end() + "\n"
+        }).trim_end().to_string()
     }
 }
 

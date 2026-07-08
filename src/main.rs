@@ -1,11 +1,7 @@
 use anyhow::Result;
 
 mod types;
-use types::{
-    board::Board,
-    extensions::{BitboardExt, SquareIndexExt},
-    piece::{ColoredPiece::*, Piece::*},
-};
+use types::{BitboardExt, Board, ColoredPiece::*, Piece::*, SquareIndexExt};
 
 fn main() -> Result<()> {
     let b = Board::try_from("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR")?;
