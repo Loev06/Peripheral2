@@ -159,3 +159,22 @@ impl TryFrom<&str> for Board {
 
     type Error = anyhow::Error;
 }
+
+impl Display for Board {
+    #[rustfmt::skip]
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let div1 = "\n+---+---+---+---+---+---+---+---+\n";
+        let div2 = " | ";
+
+        f.write_str(
+            (0..8).rev().fold(String::from(div1), |acc, rank| {
+                acc + (0..8).fold(String::from(div2), |acc, file| {
+                    acc + self.at(rank * 8 + file)
+                        .map(|p| p.to_string())
+                        .unwrap_or(String::from(" "))
+                        .as_str() + div2
+                }).trim() + div1
+            }).trim()
+        )
+    }
+}
