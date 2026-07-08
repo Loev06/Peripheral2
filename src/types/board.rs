@@ -1,3 +1,5 @@
+use anyhow::{anyhow, Result};
+
 use super::piece::{ColoredPiece, Piece::{self, *}};
 
 pub struct Board {
@@ -8,7 +10,14 @@ pub struct Board {
 }
 
 impl Board {
-    fn pieces(&self, pt: Piece) -> u64 {
+    /// Flips the square index vertically (0-63)
+    pub fn flip_square_index(square: u8) -> u8 {
+        assert!(square < 64); 
+
+        square ^ 56
+    }
+
+    pub fn pieces(&self, pt: Piece) -> u64 {
         match pt {
             King   => self.royal,
             Queen  => self.sliders & self.royal,
@@ -19,14 +28,77 @@ impl Board {
         }
     }
 
-    fn colored_pieces(&self, pt: ColoredPiece) -> u64 {
+    pub fn colored_pieces(&self, pt: ColoredPiece) -> u64 {
         match pt {
             ColoredPiece::White(p) => self.pieces(p) & self.white,
             ColoredPiece::Black(p) => self.pieces(p) & !self.white
         }
     }
 
-    fn all_pieces(&self) -> u64 {
+    pub fn all_pieces(&self) -> u64 {
         self.sliders | self.minor | self.royal
     }
+
+    pub fn put_piece(&mut self, pt: Piece, mask: u64) {
+        match pt {
+            King   => self.royal |= mask,
+            Queen  => { self.sliders |= mask; self.royal |= mask; },
+            Rook   => self.sliders |= mask,
+            Bishop => { self.sliders |= mask; self.minor |= mask; },
+            Knight => self.minor |= mask,
+            Pawn   => { self.minor |= mask; self.royal |= mask; }
+        }
+    }
+
+    pub fn put_colored_piece(&mut self, pt: ColoredPiece, sq: u8) {
+        assert !(sq < 64);
+
+        let mask = 1 << sq;
+        match pt {
+            ColoredPiece::White(p) => {
+                self.white |= mask;
+                self.put_piece(p, mask);
+            },
+            ColoredPiece::Black(p) => {
+                self.white &= !mask;
+                self.put_piece(p, mask);
+            }
+        }
+    }
+}
+
+impl TryFrom<&str> for Board {
+    fn try_from(s: &str) -> Result<Self> {
+        let mut b = Board { white: 0, sliders: 0, minor: 0, royal: 0 };
+        let mut sq = 0;
+        for c in s.chars() {
+            if sq >= 64 {
+                return Err(anyhow!("Invalid board string: {}", s));
+            }
+
+            if c == '/' {
+                if sq == 0 || sq % 8 != 0 {
+                    return Err(anyhow!("Invalid board string: {}", s));
+                }
+                continue;
+            }
+
+            if c.is_ascii_digit() {
+                let step = c.to_digit(10).expect("character is a digit") as u8;
+
+                if step == 0 || step > 8 {
+                    return Err(anyhow!("Invalid digit in board string: {}", c));
+                }
+                sq += step;
+                continue;
+            }
+
+            let pt = ColoredPiece::from_char(c)?;
+            b.put_colored_piece(pt, Board::flip_square_index(sq));
+            sq += 1;
+        }
+        Ok(b)
+    }
+    
+    type Error = anyhow::Error;
 }
