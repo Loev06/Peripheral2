@@ -72,47 +72,38 @@ impl Board {
         self.sliders | self.minor | self.royal
     }
 
-    pub fn put_pieces(&mut self, pt: Piece, mask: u64) {
-        match pt {
-            King => self.royal |= mask,
-            Queen => {
-                self.sliders |= mask;
-                self.royal |= mask;
-            }
-            Rook => self.sliders |= mask,
-            Bishop => {
-                self.sliders |= mask;
-                self.minor |= mask;
-            }
-            Knight => self.minor |= mask,
-            Pawn => {
-                self.minor |= mask;
-                self.royal |= mask;
-            }
-        }
+    fn put_uncolored_pieces(&mut self, pt: Piece, mask: u64) {
+        [&mut self.sliders, &mut self.minor, &mut self.royal]
+            .into_iter()
+            .zip(match pt {
+                King => [false, false, true],
+                Queen => [true, false, true],
+                Rook => [true, false, false],
+                Bishop => [true, true, false],
+                Knight => [false, true, false],
+                Pawn => [false, true, true],
+            })
+            .for_each(|(bb, set)| {
+                bb.set_bits(mask, set);
+            });
     }
 
-    pub fn put_colored_pieces(&mut self, pt: ColoredPiece, mask: u64) {
+    pub fn put_pieces(&mut self, pt: ColoredPiece, mask: u64) {
         match pt {
             ColoredPiece::White(p) => {
                 self.white |= mask;
-                self.put_pieces(p, mask);
+                self.put_uncolored_pieces(p, mask);
             }
             ColoredPiece::Black(p) => {
                 self.white &= !mask;
-                self.put_pieces(p, mask);
+                self.put_uncolored_pieces(p, mask);
             }
         }
     }
 
-    pub fn put_piece(&mut self, pt: Piece, sq: u8) {
+    pub fn put_piece(&mut self, pt: ColoredPiece, sq: u8) {
         assert!(sq < 64);
         self.put_pieces(pt, 1 << sq);
-    }
-
-    pub fn put_colored_piece(&mut self, pt: ColoredPiece, sq: u8) {
-        assert!(sq < 64);
-        self.put_colored_pieces(pt, 1 << sq);
     }
 }
 
@@ -148,7 +139,7 @@ impl TryFrom<&str> for Board {
             }
 
             let pt = ColoredPiece::from_char(c)?;
-            b.put_colored_piece(pt, sq.flip_vertical());
+            b.put_piece(pt, sq.flip_vertical());
             sq += 1;
         }
         Ok(b)
@@ -173,5 +164,56 @@ impl Display for Board {
                 }).trim() + div1
             }).trim()
         )
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn starting_board() -> Result<Board> {
+        Board::try_from("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR")
+    }
+
+    #[test]
+    fn test_board_creation() {
+        assert!(starting_board().is_ok());
+    }
+
+    #[test]
+    fn test_board_display() {
+        let b = starting_board().unwrap();
+        let expected = "\
++---+---+---+---+---+---+---+---+
+| r | n | b | q | k | b | n | r |
++---+---+---+---+---+---+---+---+
+| p | p | p | p | p | p | p | p |
++---+---+---+---+---+---+---+---+
+|   |   |   |   |   |   |   |   |
++---+---+---+---+---+---+---+---+
+|   |   |   |   |   |   |   |   |
++---+---+---+---+---+---+---+---+
+|   |   |   |   |   |   |   |   |
++---+---+---+---+---+---+---+---+
+|   |   |   |   |   |   |   |   |
++---+---+---+---+---+---+---+---+
+| P | P | P | P | P | P | P | P |
++---+---+---+---+---+---+---+---+
+| R | N | B | Q | K | B | N | R |
++---+---+---+---+---+---+---+---+";
+        assert_eq!(expected, b.to_string());
+    }
+
+    #[test]
+    fn test_board_place_and_at() {
+        let mut b = starting_board().unwrap();
+        for sq in 0..64 {
+            for pt in [King, Queen, Rook, Bishop, Knight, Pawn] {
+                b.put_piece(ColoredPiece::White(pt), sq);
+                assert_eq!(Some(ColoredPiece::White(pt)), b.at(sq));
+                b.put_piece(ColoredPiece::Black(pt), sq);
+                assert_eq!(Some(ColoredPiece::Black(pt)), b.at(sq));
+            }
+        }
     }
 }

@@ -9,6 +9,7 @@ pub trait SquareIndexExt: Sized {
 }
 
 pub trait BitboardExt {
+    fn set_bits(&mut self, mask: u64, set: bool);
     fn bit_set(&self, sq: u8) -> bool;
     fn display(self) -> String;
 }
@@ -61,6 +62,14 @@ impl SquareIndexExt for u8 {
 }
 
 impl BitboardExt for u64 {
+    fn set_bits(&mut self, mask: u64, set: bool) {
+        if set {
+            *self |= mask;
+        } else {
+            *self &= !mask;
+        }
+    }
+
     fn bit_set(&self, sq: u8) -> bool {
         assert!(sq < 64);
         (self & (1 << sq)) != 0
