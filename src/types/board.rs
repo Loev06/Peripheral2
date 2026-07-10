@@ -211,8 +211,13 @@ mod tests {
             for pt in [King, Queen, Rook, Bishop, Knight, Pawn] {
                 b.put_piece(ColoredPiece::White(pt), sq);
                 assert_eq!(Some(ColoredPiece::White(pt)), b.at(sq));
+                assert!(b.colored_pieces(ColoredPiece::White(pt)).bit_set(sq));
+                assert!(!b.colored_pieces(ColoredPiece::Black(pt)).bit_set(sq));
+
                 b.put_piece(ColoredPiece::Black(pt), sq);
                 assert_eq!(Some(ColoredPiece::Black(pt)), b.at(sq));
+                assert!(!b.colored_pieces(ColoredPiece::White(pt)).bit_set(sq));
+                assert!(b.colored_pieces(ColoredPiece::Black(pt)).bit_set(sq));
             }
         }
     }
