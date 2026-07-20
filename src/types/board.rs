@@ -4,7 +4,7 @@ use std::fmt::Display;
 use crate::types::{
     BitboardExt, ColoredPiece,
     Piece::{self, *},
-    SquareIndexExt,
+    Square, SquareIndexExt,
 };
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -18,7 +18,7 @@ pub struct Board {
 }
 
 impl Board {
-    fn uncolored_at(&self, sq: u8) -> Option<Piece> {
+    fn uncolored_at(&self, sq: Square) -> Option<Piece> {
         assert!(sq < 64);
         match (
             self.sliders.bit_set(sq),
@@ -37,7 +37,7 @@ impl Board {
         }
     }
 
-    pub fn at(&self, sq: u8) -> Option<ColoredPiece> {
+    pub fn at(&self, sq: Square) -> Option<ColoredPiece> {
         assert!(sq < 64);
 
         // There is room to treat None differently whether self.white.bit_set(sq)
@@ -101,7 +101,7 @@ impl Board {
         }
     }
 
-    pub fn put_piece(&mut self, pt: ColoredPiece, sq: u8) {
+    pub fn put_piece(&mut self, pt: ColoredPiece, sq: Square) {
         assert!(sq < 64);
         self.put_pieces(pt, 1 << sq);
     }

@@ -3,9 +3,9 @@ use anyhow::{Result, anyhow};
 // Extension traits for external types
 pub trait SquareIndexExt: Sized {
     fn from_square_name(name: &str) -> Result<Self>;
-    fn to_square_name(self) -> Result<String>;
+    fn to_square_name(&self) -> Result<String>;
     /// Flips the square index vertically
-    fn flip_vertical(self) -> Self;
+    fn flip_vertical(&self) -> Self;
 }
 
 pub trait BitboardExt {
@@ -41,8 +41,8 @@ impl SquareIndexExt for u8 {
         Ok(rank_index * 8 + file_index)
     }
 
-    fn to_square_name(self) -> Result<String> {
-        if self >= 64 {
+    fn to_square_name(&self) -> Result<String> {
+        if *self >= 64 {
             return Err(anyhow!("Invalid square index: {}", self));
         }
 
@@ -55,8 +55,8 @@ impl SquareIndexExt for u8 {
         Ok(format!("{}{}", file, rank))
     }
 
-    fn flip_vertical(self) -> Self {
-        assert!(self < 64);
+    fn flip_vertical(&self) -> Self {
+        assert!(*self < 64);
         self ^ 56
     }
 }
