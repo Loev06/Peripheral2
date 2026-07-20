@@ -1,5 +1,7 @@
 use anyhow::{Result, anyhow};
 
+use crate::types::Square;
+
 // Extension traits for external types
 pub trait SquareIndexExt: Sized {
     fn from_square_name(name: &str) -> Result<Self>;
@@ -10,11 +12,11 @@ pub trait SquareIndexExt: Sized {
 
 pub trait BitboardExt {
     fn set_bits(&mut self, mask: u64, set: bool);
-    fn bit_set(&self, sq: u8) -> bool;
+    fn bit_set(&self, sq: Square) -> bool;
     fn display(self) -> String;
 }
 
-impl SquareIndexExt for u8 {
+impl SquareIndexExt for Square {
     fn from_square_name(name: &str) -> Result<Self> {
         if name.len() != 2 {
             return Err(anyhow!("Invalid square name: {}", name));
@@ -70,7 +72,7 @@ impl BitboardExt for u64 {
         }
     }
 
-    fn bit_set(&self, sq: u8) -> bool {
+    fn bit_set(&self, sq: Square) -> bool {
         assert!(sq < 64);
         (self & (1 << sq)) != 0
     }
@@ -95,20 +97,20 @@ mod square_index_tests {
 
     #[test]
     fn test_from_name() {
-        assert_eq!(u8::from_square_name("a1").unwrap(), 0);
-        assert_eq!(u8::from_square_name("H1").unwrap(), 7);
-        assert_eq!(u8::from_square_name("A8").unwrap(), 56);
-        assert_eq!(u8::from_square_name("h8").unwrap(), 63);
-        assert!(u8::from_square_name("i1").is_err());
-        assert!(u8::from_square_name("a9").is_err());
-        assert!(u8::from_square_name("a").is_err());
+        assert_eq!(Square::from_square_name("a1").unwrap(), 0);
+        assert_eq!(Square::from_square_name("H1").unwrap(), 7);
+        assert_eq!(Square::from_square_name("A8").unwrap(), 56);
+        assert_eq!(Square::from_square_name("h8").unwrap(), 63);
+        assert!(Square::from_square_name("i1").is_err());
+        assert!(Square::from_square_name("a9").is_err());
+        assert!(Square::from_square_name("a").is_err());
     }
 
     #[test]
     fn test_from_to_name() {
         for sq in 0..64 {
             let name = sq.to_square_name().unwrap();
-            let index = u8::from_square_name(&name).unwrap();
+            let index = Square::from_square_name(&name).unwrap();
             assert_eq!(sq, index);
         }
     }
